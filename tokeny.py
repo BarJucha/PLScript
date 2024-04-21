@@ -1,5 +1,6 @@
 import ply.yacc as yacc
 from ply import lex
+import re
 
 tokens = (
     'ZMIENNA',
@@ -17,14 +18,14 @@ tokens = (
     'LNAWIAS_KWADRATOWY',
     'PNAWIAS_KWADRATOWY',
     'LNAWIAS_KLAMROWY',
-    'PNAWIAS_KLAMROWY'
+    'PNAWIAS_KLAMROWY',
     'ROWNE',
     'ROZNE',
     'PODSTAW',
     'WIEKSZE',
     'MNIEJSZE',
-    'MNIEJSZE_RÓWNE',
-    'WIEKSZE_RÓWNE',
+    'MNIEJSZE_ROWNE',
+    'WIEKSZE_ROWNE',
     'ALTERNATYWA',
     'NEGACJA',
     'KONIUNKCJA',
@@ -47,11 +48,9 @@ tokens = (
     'ZWIEKSZ'
 )
 
-t_ZMIENNA = r'[a-zA-Z_][a-zA-Z0-9_]*'
-
-def t_NUMBER(t):
+def t_LICZBA(t):
     r'-?\d+\.?\d*'
-    t.value = int(t.value)
+    t.value = float(t.value) if '.' in t.value else int(t.value)
     return t
 
 t_PLUS = r'POLACZ'
@@ -72,9 +71,9 @@ t_ROZNE = r'INNE OD'
 t_PODSTAW = r'TO'
 t_WIEKSZE = r'SILNIEJSZE OD'
 t_MNIEJSZE = r'SLABSZE OD'
-t_MNIEJSZE_RÓWNE = r'<='
-t_WIEKSZE_RÓWNE = r'>='
-t_ALTERANTYWA = r'LUB'
+t_MNIEJSZE_ROWNE = r'<='
+t_WIEKSZE_ROWNE = r'>='
+t_ALTERNATYWA = r'LUB'
 t_KONIUNKCJA = r'I'
 t_NEGACJA = r'NIE'
 t_PRZECINEK = r','
@@ -89,8 +88,26 @@ t_FALSZ = r'FALSZ'
 t_KLASA = r'KATEGORIA'
 t_FROM = r'OD'
 t_IMPORT = r'UKRADNIJ'
-t_DWUKROBEK = r':'
-t_NAPIS = t_NAPIS = r'"[^"\n]*"'
+t_DWUKROPEK = r':'
+t_NAPIS = r'"[^"\n]*"'
 t_PRZERWIJ = r'SKONCZ'
 t_KONTYNUUJ = r'LEC DALEJ'
 t_ZWIEKSZ = r'LVL_UP'
+
+def t_error(t):
+    if not re.match(r'\s',t.value):
+        print("Nieznany symbol: '%s'" % t.value[0])
+    t.lexer.skip(1)
+
+t_ZMIENNA = r'[a-zA-Z_][a-zA-Z0-9_]*'
+
+lexer = lex.lex()
+
+proba = "x <= 2\n y TO 3\n x POLACZ y"
+
+lexer.input(proba)
+while True:
+    tok = lexer.token()
+    if not tok:
+        break
+    print(tok)
