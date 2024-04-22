@@ -1,5 +1,5 @@
 # PLScript
-
+Własny język programowania z polskimi wyrazami kluczowymi.
 
 # Spis tokenów
 * Int = 'l_całkowita'
