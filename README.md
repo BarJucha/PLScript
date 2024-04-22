@@ -47,4 +47,5 @@
 * Funkcja = 'MASZYNA'
 * LiczbaCal = '[0-9]+'
 * LiczbaPrz = '[-]?[0-9]+([,][0-9]+)?'
-* Napis = ''
+* Napis = '"[a-zA-Z0-9 !@#$%^&*()-=+,.?:/|]"'
+* Identyfikator = '[a-zA-Z0-9_][a-zA-Z0-9_]*'
