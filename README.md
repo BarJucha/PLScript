@@ -1,5 +1,5 @@
 # PLScript
-
+Własny język programowania z polskimi wyrazami kluczowymi.
 
 # Spis tokenów
 * Int = 'l_całkowita'
@@ -34,6 +34,7 @@
 * Wczytaj = 'WEŹ'
 * Dwukropek = ':'
 * Przecinek = ','
+* Kropka = '.'
 * If = 'JEŚLI'
 * Elif = 'INACZEJ_JEŚLI'
 * Else = 'INACZEJ'
@@ -45,6 +46,7 @@
 * Case = 'PRZYPADEK'
 * Rand = 'LOSUJ'
 * Funkcja = 'MASZYNA'
+* Klasa = 'KLASA'
 * LiczbaCal = '[0-9]+'
 * LiczbaPrz = '[-]?[0-9]+([,][0-9]+)?'
 * Napis = '"[a-zA-Z0-9 !@#$%^&*()-=+,.?:/|]"'
