@@ -8,7 +8,7 @@ def execute_code():
         f.write(user_input)
 
     # Wykonaj kod w terminalu
-    result = subprocess.run("python Proba.py", shell=True, capture_output=True, text=True)
+    result = subprocess.run("python Driver.py", shell=True, capture_output=True, text=True)
 
     # Wyświetl wyniki w terminalu
     terminal_output.config(state=tk.NORMAL)
@@ -30,7 +30,7 @@ top_frame.grid_rowconfigure(0, weight=1)  # Wiersz 0 - input_text
 top_frame.grid_columnconfigure(0, weight=1)  # Kolumna 0 - input_text
 top_frame.grid_columnconfigure(1, weight=0)  # Kolumna 1 - input_scroll
 
-input_text = tk.Text(top_frame, bg="black", fg="white")
+input_text = tk.Text(top_frame, bg="black", fg="white", insertbackground="white")
 input_text.grid(row=0, column=0, sticky="nsew")
 
 input_scroll = tk.Scrollbar(top_frame, orient=tk.VERTICAL, command=input_text.yview, width=20)

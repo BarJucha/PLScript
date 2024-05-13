@@ -4,7 +4,7 @@ PLUS : 'POLACZ';
 MINUS : 'ROZLACZ';
 MNOZENIE : 'RAZY';
 DZIELENIE : 'PODZIEL';
-KOMENTARZ : 'SWOJA_DROGA';
+KOMENTARZ : 'SWOJA_DROGA' ~[\r\n]* -> skip;
 FUNKCJA : 'FUNKCJA';
 LNAWIAS_OKRAGLY : '(';
 PNAWIAS_OKRAGLY : ')';
@@ -38,10 +38,10 @@ PRZERWIJ : 'SKONCZ';
 KONTYNUUJ : 'DALEJ';
 ZWIEKSZ : 'PLUSIK';
 KONIEC_LINII : '\r\n';
-NUMERYCZNY : [-]?[0-9]+([.][0-9]+)?;
+NUMERYCZNY : '-'?[0-9]+('.'[0-9]+)?;
 ID : [a-zA-Z_][a-zA-Z0-9_]*;
-SPACJA : (' ' | '\t' | '\n') -> skip;
-INT : 'LICZBA ';
+SPACJA : [ \t\r\n] -> skip;
+INT : 'LICZBA';
 STRING : 'TEKST';
 BOOL : 'BOOL';
 PRZECINEK : ',';
@@ -58,15 +58,8 @@ kod:
     wyrazenie KONIEC_LINII kod |
     KOMENTARZ kod;
 
-typWartosci:
-    (INT | STRING | BOOL) SPACJA?;
-
-
-deklaracjaWartosci:
-    typWartosci ID PODSTAW wartosc;
-
-przypisanieWartosci:
-    ID PODSTAW wartosc;
+wyrazenie:
+    deklaracjaWartosci | przypisanieWartosci | wyrazenieDrukowania | wyrazenieFor | wyrazenieWhile | wyrazenieWarunkowe KONIEC | wywolanieFunkcji | deklaracjaFunkcji | RETURN wartosc;
 
 
 deklaracjaFunkcji:
@@ -74,9 +67,6 @@ deklaracjaFunkcji:
 
 wywolanieFunkcji:
     ID LNAWIAS_OKRAGLY wszystkieWartosci PNAWIAS_OKRAGLY;
-
-wyrazenie:
-    deklaracjaWartosci | przypisanieWartosci | wyrazenieDrukowania | wyrazenieFor | wyrazenieWhile | wyrazenieWarunkowe KONIEC | wywolanieFunkcji | deklaracjaFunkcji | RETURN wartosc;
 
 wartosc:
     wyrazenieString | wyrazenieBool | wyrazenieArytmetyczne | ID | wywolanieFunkcji;
@@ -113,6 +103,15 @@ wyrazenieElif:
 
 wyrazenieElse:
     ELSE LNAWIAS_KLAMROWY (petla|kod) PNAWIAS_KLAMROWY;
+
+typWartosci:
+    (INT | STRING | BOOL) SPACJA?;
+
+deklaracjaWartosci:
+    typWartosci ID PODSTAW wartosc;
+
+przypisanieWartosci:
+    ID PODSTAW wartosc;
 
 listaArgumentow:
     typWartosci ID | listaArgumentow PRZECINEK typWartosci ID;
