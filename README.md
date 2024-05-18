@@ -8,7 +8,7 @@ PLUS : 'POLACZ';
 MINUS : 'ROZLACZ';
 MNOZENIE : 'RAZY';
 DZIELENIE : 'PODZIEL';
-KOMENTARZ : 'SWOJA_DROGA';
+KOMENTARZ : 'SWOJA_DROGA' ~[\r\n]* -> skip;
 FUNKCJA : 'FUNKCJA';
 LNAWIAS_OKRAGLY : '(';
 PNAWIAS_OKRAGLY : ')';
@@ -42,9 +42,9 @@ PRZERWIJ : 'SKONCZ';
 KONTYNUUJ : 'DALEJ';
 ZWIEKSZ : 'PLUSIK';
 KONIEC_LINII : '\r\n';
-NUMERYCZNY : [-]?[0-9]+([.][0-9]+)?;
+NUMERYCZNY : '-'?[0-9]+('.'[0-9]+)?;
 ID : [a-zA-Z_][a-zA-Z0-9_]*;
-SPACJA : ' ';
+SPACJA : [ \t\r\n] -> skip;
 INT : 'LICZBA';
 STRING : 'TEKST';
 BOOL : 'BOOL';
@@ -59,29 +59,26 @@ KONIEC: 'KONIEC';
 
 ```antlr
 
-// program glowny i podstawowe operacje
-
 program:
     kod* KONIEC;
 
 kod:
-    instrukcja KONIEC_LINII |
-    instrukcja KONIEC_LINII kod;
+    wyrazenie KONIEC_LINII |
+    wyrazenie KONIEC_LINII kod |
+    KOMENTARZ kod;
+
+wyrazenie:
+    deklaracjaWartosci | przypisanieWartosci | wyrazenieDrukowania | wyrazenieFor | wyrazenieWhile | wyrazenieWarunkowe KONIEC | wywolanieFunkcji | deklaracjaFunkcji | RETURN wartosc;
+
+
+deklaracjaFunkcji:
+    FUNKCJA ID LNAWIAS_OKRAGLY wszystkieArgumenty PNAWIAS_OKRAGLY LNAWIAS_KLAMROWY kod RETURN wartosc PNAWIAS_KLAMROWY;
+
+wywolanieFunkcji:
+    ID LNAWIAS_OKRAGLY wszystkieWartosci PNAWIAS_OKRAGLY;
 
 wartosc:
     wyrazenieString | wyrazenieBool | wyrazenieArytmetyczne | ID | wywolanieFunkcji;
-
-typWartosci:
-    (INT | STRING | BOOL) SPACJA?;
-
-
-deklaracjaWartosci:
-    typWartosci ID PODSTAW wartosc;
-
-przypisanieWartosci:
-    ID PODSTAW wartosc;
-
-// wyrazenia danych
 
 wyrazenieString:
     wyrazenieString ZWIEKSZ wyrazenieString | NAPIS | ID | LNAWIAS_OKRAGLY wyrazenieString PNAWIAS_OKRAGLY | wywolanieFunkcji;
@@ -97,16 +94,13 @@ wyrazenieArytmetyczne:
     wyrazenieArytmetyczne (MINUS | PLUS) wyrazenieArytmetyczne |
     NUMERYCZNY | ID | wywolanieFunkcji;
 
+wyrazenieDrukowania:
+    PRINT wartosc | PRINT LNAWIAS_OKRAGLY wartosc PNAWIAS_OKRAGLY;
 
-// petle i warunki
-
-petla:
-    kod | petla (PRZERWIJ | KONTYNUUJ) KONIEC_LINII petla;
-
-instrukcjaFor:
+wyrazenieFor:
     FOR ID OD wyrazenieArytmetyczne DO wyrazenieArytmetyczne LNAWIAS_KLAMROWY petla PNAWIAS_KLAMROWY;
 
-instrukcjaWhile:
+wyrazenieWhile:
     WHILE wyrazenieBool LNAWIAS_KLAMROWY petla PNAWIAS_KLAMROWY;
 
 wyrazenieWarunkowe:
@@ -119,17 +113,14 @@ wyrazenieElif:
 wyrazenieElse:
     ELSE LNAWIAS_KLAMROWY (petla|kod) PNAWIAS_KLAMROWY;
 
+typWartosci:
+    (INT | STRING | BOOL) SPACJA?;
 
-instrukcja:
-    deklaracjaWartosci | przypisanieWartosci | wyrazenieDrukowania | instrukcjaFor | instrukcjaWhile | wyrazenieWarunkowe KONIEC | wywolanieFunkcji | deklaracjaFunkcji | RETURN wartosc;
+deklaracjaWartosci:
+    typWartosci ID PODSTAW wartosc;
 
-
-// wypisanie do testow
-
-instrukcjaDrukowania:
-    PRINT wartosc | PRINT LNAWIAS_OKRAGLY wartosc PNAWIAS_OKRAGLY;
-
-// potrzebne do wywolywnaia funkcji
+przypisanieWartosci:
+    ID PODSTAW wartosc;
 
 listaArgumentow:
     typWartosci ID | listaArgumentow PRZECINEK typWartosci ID;
@@ -137,11 +128,11 @@ listaArgumentow:
 wszystkieArgumenty:
     SPACJA | listaArgumentow;
 
-deklaracjaFunkcji:
-    FUNKCJA ID LNAWIAS_OKRAGLY wszystkieArgumenty PNAWIAS_OKRAGLY LNAWIAS_KLAMROWY kod RETURN wartosc PNAWIAS_KLAMROWY;
+petla:
+    kod | petla (PRZERWIJ | KONTYNUUJ) KONIEC_LINII petla |
+    petla (PRZERWIJ | KONTYNUUJ) KONIEC_LINII |
+    (PRZERWIJ | KONTYNUUJ) KONIEC_LINII petla | (PRZERWIJ | KONTYNUUJ) KONIEC_LINII;
 
-wywolanieFunkcji:
-    ID LNAWIAS_OKRAGLY wszystkieWartosci PNAWIAS_OKRAGLY;
 
 listaWartosci:
     wartosc | listaWartosci PRZECINEK wartosc;
