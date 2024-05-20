@@ -9,6 +9,11 @@ else:
 
 class PLSRulesV2Visitor(ParseTreeVisitor):
 
+    def __init__(self):
+        self.variables = {}
+        self.variablesTypes = {}
+        self.functions = {}
+
     # Visit a parse tree produced by PLSRulesV2Parser#program.
     def visitProgram(self, ctx:PLSRulesV2Parser.ProgramContext):
         return self.visitChildren(ctx)
@@ -46,7 +51,12 @@ class PLSRulesV2Visitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PLSRulesV2Parser#deklaracjaWartosci.
     def visitDeklaracjaWartosci(self, ctx:PLSRulesV2Parser.DeklaracjaWartosciContext):
-        return self.visitChildren(ctx)
+        var_type = ctx.typWartosci().getText()
+        var_name = ctx.ID().getText()
+        value = self.visit(ctx.wyrazeniePodstawowe())
+        self.variables[var_name] = value
+        self.variablesTypes[var_type] = var_type
+        return value
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#przypisanieWartosci.
@@ -56,11 +66,26 @@ class PLSRulesV2Visitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PLSRulesV2Parser#wyrazeniePodstawowe.
     def visitWyrazeniePodstawowe(self, ctx:PLSRulesV2Parser.WyrazeniePodstawoweContext):
-        return self.visitChildren(ctx)
+        if ctx.NUMERYCZNY():
+            return float(ctx.NUMERYCZNY().getText())
+        elif ctx.ID():
+            return self.variables.get(ctx.ID().getText(), None)
+        elif ctx.NAPIS():
+            return ctx.NAPIS().getText().strip('"')
+        elif ctx.PRAWDA():
+            return True
+        elif ctx.FALSZ():
+            return False
+        else:
+            return self.visitChildren(ctx)
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#wyrazenieString.
     def visitWyrazenieString(self, ctx:PLSRulesV2Parser.WyrazenieStringContext):
+        if ctx.ID():
+            return self.variables.get(ctx.ID().getText(), None)
+        if ctx.NAPIS():
+            return ctx.NAPIS().getText().strip('"')
         return self.visitChildren(ctx)
 
 
@@ -71,7 +96,31 @@ class PLSRulesV2Visitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PLSRulesV2Parser#wyrazenieArytmetyczne.
     def visitWyrazenieArytmetyczne(self, ctx:PLSRulesV2Parser.WyrazenieArytmetyczneContext):
-        return self.visitChildren(ctx)
+        if ctx.NUMERYCZNY():
+            return float(ctx.NUMERYCZNY().getText())
+        elif ctx.ID():
+            if self.variables.get(ctx.ID().getText(), None) is not None:
+                return self.variables.get(ctx.ID().getText(), None)
+            else:
+                raise KeyError(f"Zmienna {ctx.ID().getText()} nie jest zadeklarowana")
+        elif ctx.MNOZENIE():
+            left = self.visit(ctx.wyrazenieArytmetyczne(0))
+            right = self.visit(ctx.wyrazenieArytmetyczne(1))
+            return left * right
+        elif ctx.DZIELENIE():
+            left = self.visit(ctx.wyrazenieArytmetyczne(0))
+            right = self.visit(ctx.wyrazenieArytmetyczne(1))
+            return left / right
+        elif ctx.PLUS():
+            left = self.visit(ctx.wyrazenieArytmetyczne(0))
+            right = self.visit(ctx.wyrazenieArytmetyczne(1))
+            return left + right
+        elif ctx.MINUS():
+            left = self.visit(ctx.wyrazenieArytmetyczne(0))
+            right = self.visit(ctx.wyrazenieArytmetyczne(1))
+            return left - right
+        else:
+            return self.visitChildren(ctx)
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#wywolanieFunkcji.
@@ -86,6 +135,8 @@ class PLSRulesV2Visitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PLSRulesV2Parser#wartosc.
     def visitWartosc(self, ctx:PLSRulesV2Parser.WartoscContext):
+        if ctx.ID():
+            return self.variables.get(ctx.ID().getText(), None)
         return self.visitChildren(ctx)
 
 
@@ -111,7 +162,9 @@ class PLSRulesV2Visitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PLSRulesV2Parser#printInstrukcja.
     def visitPrintInstrukcja(self, ctx:PLSRulesV2Parser.PrintInstrukcjaContext):
-        return self.visitChildren(ctx)
+        value = self.visit(ctx.wartosc())
+        print(f"{value}")
+        return value
 
 
 

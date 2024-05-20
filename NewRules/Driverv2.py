@@ -15,7 +15,9 @@ def parse_code(input_code):
 def main():
     with open("plsCode.txt", 'r') as file:
         text = file.read()
-        parse_code(text)
+        tree = parse_code(text)
+        visitor = PLSRulesV2Visitor()
+        visitor.visit(tree)
 
 if __name__ == "__main__":
     main()
