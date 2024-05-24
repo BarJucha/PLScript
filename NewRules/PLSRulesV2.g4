@@ -117,7 +117,7 @@ typWartosci:
     INT | STRING | BOOL;
 
 ifInstrukcja:
-    IF wyrazenieBool LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY (ELIF wyrazenieBool LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY)* (ELSE LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY)?;
+    IF wyrazenieBool LNAWIAS_KLAMROWY (instrukcja KONIEC_LINII)* PNAWIAS_KLAMROWY (ELIF wyrazenieBool LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY)* (ELSE LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY)?;
 
 whileInstrukcja:
     WHILE wyrazenieBool LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY;
