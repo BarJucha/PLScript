@@ -1,7 +1,7 @@
 # Generated from .//PLSRulesV2.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
-    from .PLSRulesV2Parser import PLSRulesV2Parser
+    from NewRules.antlr.PLSRulesV2Parser import PLSRulesV2Parser
 else:
     from PLSRulesV2Parser import PLSRulesV2Parser
 
@@ -63,12 +63,12 @@ class PLSRulesV2Visitor(ParseTreeVisitor):
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#deklaracjaFunkcji.
-    def visitDeklaracjaFunkcji(self, ctx:PLSRulesV2Parser.DeklaracjaFunkcjiContext):
+    def visitDeklaracjaFunkcji(self, ctx: PLSRulesV2Parser.DeklaracjaFunkcjiContext):
         return self.visitChildren(ctx)
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#parametry.
-    def visitParametry(self, ctx:PLSRulesV2Parser.ParametryContext):
+    def visitParametry(self, ctx: PLSRulesV2Parser.ParametryContext):
         return self.visitChildren(ctx)
 
 
@@ -205,7 +205,7 @@ class PLSRulesV2Visitor(ParseTreeVisitor):
         return text.replace(word, f"-->{word}<--")
 
     # Visit a parse tree produced by PLSRulesV2Parser#wywolanieFunkcji.
-    def visitWywolanieFunkcji(self, ctx:PLSRulesV2Parser.WywolanieFunkcjiContext):
+    def visitWywolanieFunkcji(self, ctx: PLSRulesV2Parser.WywolanieFunkcjiContext):
         return self.visitChildren(ctx)
 
 
@@ -227,18 +227,40 @@ class PLSRulesV2Visitor(ParseTreeVisitor):
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#ifInstrukcja.
-    def visitIfInstrukcja(self, ctx:PLSRulesV2Parser.IfInstrukcjaContext):
-        return self.visitChildren(ctx)
+    def visitIfInstrukcja(self, ctx: PLSRulesV2Parser.IfInstrukcjaContext):
+        condition_result = self.visit(ctx.wyrazenieBool())
+
+        if condition_result:
+            for instruction_ctx in ctx.instrukcja():
+                self.visit(instruction_ctx)
+        else:
+            if ctx.elseInstrukcja() is not None:
+                for instruction_ctx in ctx.elseInstrukcja().instrukcja():
+                    self.visit(instruction_ctx)
+        return None
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#whileInstrukcja.
     def visitWhileInstrukcja(self, ctx:PLSRulesV2Parser.WhileInstrukcjaContext):
-        return self.visitChildren(ctx)
+        while_condition = self.visit(ctx.wyrazenieBool())
+
+        while while_condition:
+            for instruction_ctx in ctx.instrukcja():
+                self.visit(instruction_ctx)
+            while_condition = self.visit(ctx.wyrazenieBool())
+        return None
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#forInstrukcja.
     def visitForInstrukcja(self, ctx:PLSRulesV2Parser.ForInstrukcjaContext):
-        return self.visitChildren(ctx)
+        self.visit(ctx.deklaracjaWartosci())
+        for_condition = self.visit(ctx.wyrazenieBool())
+        while for_condition:
+            for instruction_ctx in ctx.instrukcja():
+                self.visit(instruction_ctx)
+            self.visit(ctx.przypisanieWartosci())
+            for_condition = self.visit(ctx.wyrazenieBool())
+        return None
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#printInstrukcja.
