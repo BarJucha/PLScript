@@ -151,19 +151,21 @@ printInstrukcja:
 # Narzędzia
 Głównym narzędziem używanym w projekcie jest ANTLR, który został wykorzystany do wygenerowania analizatorów składniowych.
 
-#Instrukcja obsługi
+# Instrukcja obsługi
 1. Pobierz zawartość repozytorium
 2. Pobierz zewnętrzne biblioteki potrzebne do działania aplikacji
-   ''' sh
+3. 
+``` sh
 pip install pyqt5
-   '''
-3. Uruchom aplikację poprzez plik app.py
+```
+
+4. Uruchom aplikację poprzez plik app.py
 ''' sh
 python app.py
    '''
 
 #Przykłady
-'''
+```
 LICZBA A TO 4;
 
 JESLI A < 2 {
@@ -204,9 +206,9 @@ WYPISZ(B);
 WYPISZ("-----");
 
 WYPISZ(WYWOLAJ FOO(10));
-'''
+```
 Po wykonaniu:
-'''
+```
 3.0
 -----
 4.0
@@ -232,4 +234,4 @@ Po wykonaniu:
 7.0
 8.0
 9.0
-'''
+```
