@@ -46,6 +46,7 @@ PRZECINEK : ',';
 DO: 'DO';
 PRINT: 'WYPISZ';
 KONIEC: 'KONIEC';
+WYWOLANIE: 'WYWOLAJ';
 NUMERYCZNY : '-'?[0-9]+('.'[0-9]+)?;
 ID : [a-zA-Z_][a-zA-Z0-9_]*;
 
@@ -57,12 +58,14 @@ kod:
 
 wyrazenie:
     instrukcja |
-    deklaracjaFunkcji;
+    deklaracjaFunkcji |
+    wywolanieFunkcji;
 
 instrukcja:
     deklaracjaWartosci |
     przypisanieWartosci |
-    instrukcjaZlozona;
+    instrukcjaZlozona |
+    returnInstrukcja;
 
 instrukcjaZlozona:
     ifInstrukcja |
@@ -71,13 +74,13 @@ instrukcjaZlozona:
     printInstrukcja;
 
 deklaracjaFunkcji:
-    FUNKCJA ID LNAWIAS_OKRAGLY (parametry)? PNAWIAS_OKRAGLY LNAWIAS_KLAMROWY (instrukcja)* (RETURN wyrazeniePodstawowe?)? PNAWIAS_KLAMROWY;
+    FUNKCJA ID LNAWIAS_OKRAGLY (parametry)? PNAWIAS_OKRAGLY LNAWIAS_KLAMROWY (instrukcja)* (returnInstrukcja)? PNAWIAS_KLAMROWY;
 
 parametry:
     typWartosci ID (PRZECINEK typWartosci ID)*;
 
 deklaracjaWartosci:
-    typWartosci ID PODSTAW wyrazeniePodstawowe;
+    typWartosci ID PODSTAW wartosc;
 
 przypisanieWartosci:
     ID PODSTAW wartosc;
@@ -105,10 +108,10 @@ wyrazenieArytmetyczne:
     NUMERYCZNY | ID | wywolanieFunkcji;
 
 wywolanieFunkcji:
-    ID LNAWIAS_OKRAGLY listaWartosci PNAWIAS_OKRAGLY;
+    WYWOLANIE ID LNAWIAS_OKRAGLY listaWartosci? PNAWIAS_OKRAGLY;
 
 listaWartosci:
-    wartosc | listaWartosci PRZECINEK wartosc;
+    (wartosc PRZECINEK)*? wartosc;
 
 wartosc:
     wyrazenieString | wyrazenieBool | wyrazenieArytmetyczne | ID | wywolanieFunkcji;
@@ -116,17 +119,20 @@ wartosc:
 typWartosci:
     INT | STRING | BOOL;
 
+returnInstrukcja:
+    RETURN wyrazeniePodstawowe?;
+
 ifInstrukcja:
-    IF wyrazenieBool LNAWIAS_KLAMROWY (instrukcja)* PNAWIAS_KLAMROWY (elseInstrukcja)?;
+    IF wyrazenieBool LNAWIAS_KLAMROWY (instrukcja)* returnInstrukcja? PNAWIAS_KLAMROWY (elseInstrukcja)?;
 
 elseInstrukcja:
-    ELSE LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY;
+    ELSE LNAWIAS_KLAMROWY instrukcja* returnInstrukcja? PNAWIAS_KLAMROWY;
 
 whileInstrukcja:
-    WHILE wyrazenieBool LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY;
+    WHILE wyrazenieBool LNAWIAS_KLAMROWY instrukcja* returnInstrukcja? PNAWIAS_KLAMROWY;
 
 forInstrukcja:
-    FOR LNAWIAS_OKRAGLY deklaracjaWartosci KONIEC_LINII wyrazenieBool KONIEC_LINII przypisanieWartosci PNAWIAS_OKRAGLY LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY;
+    FOR LNAWIAS_OKRAGLY deklaracjaWartosci KONIEC_LINII wyrazenieBool KONIEC_LINII przypisanieWartosci PNAWIAS_OKRAGLY LNAWIAS_KLAMROWY instrukcja* returnInstrukcja? PNAWIAS_KLAMROWY;
 
 printInstrukcja:
     PRINT LNAWIAS_OKRAGLY wartosc PNAWIAS_OKRAGLY;

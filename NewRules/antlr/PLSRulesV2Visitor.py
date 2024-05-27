@@ -64,19 +64,45 @@ class PLSRulesV2Visitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PLSRulesV2Parser#deklaracjaFunkcji.
     def visitDeklaracjaFunkcji(self, ctx: PLSRulesV2Parser.DeklaracjaFunkcjiContext):
-        return self.visitChildren(ctx)
+        funkcja_nazwa = ctx.ID().getText()
+        parametry = self.visit(ctx.parametry())
+
+        instrukcje = []
+        zwracanie = False
+        for instrukcja_ctx in ctx.instrukcja():
+            if instrukcja_ctx.returnInstrukcja():
+                zwracanie = True
+            instrukcje.append(instrukcja_ctx)
+
+        self.functions[funkcja_nazwa] = {
+            "parametry": parametry,
+            "instrukcje": instrukcje,
+            "return": zwracanie
+        }
+
+        return None
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#parametry.
     def visitParametry(self, ctx: PLSRulesV2Parser.ParametryContext):
-        return self.visitChildren(ctx)
+        parameters = []
+        typ_wartosci_contexts = ctx.typWartosci()
+        id_tokens = ctx.ID()
+
+        for i in range(len(typ_wartosci_contexts)):
+            typ_wartosci_ctx = typ_wartosci_contexts[i]
+            id_token = id_tokens[i]
+
+            parameters.append((typ_wartosci_ctx.getText(), id_token.getText()))
+
+        return parameters
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#deklaracjaWartosci.
     def visitDeklaracjaWartosci(self, ctx:PLSRulesV2Parser.DeklaracjaWartosciContext):
         var_type = ctx.typWartosci().getText()
         var_name = ctx.ID().getText()
-        value = self.visit(ctx.wyrazeniePodstawowe())
+        value = self.visit(ctx.wartosc())
         self.variables[var_name] = value
         self.variablesTypes[var_type] = var_type
         return value
@@ -205,13 +231,52 @@ class PLSRulesV2Visitor(ParseTreeVisitor):
         return text.replace(word, f"-->{word}<--")
 
     # Visit a parse tree produced by PLSRulesV2Parser#wywolanieFunkcji.
+
     def visitWywolanieFunkcji(self, ctx: PLSRulesV2Parser.WywolanieFunkcjiContext):
-        return self.visitChildren(ctx)
+        funkcja_nazwa = ctx.ID().getText()
+
+        if funkcja_nazwa not in self.functions:
+            raise Exception(f"Nieznana funkcja: {funkcja_nazwa}")
+
+        funkcja = self.functions[funkcja_nazwa]
+
+        # Pobierz argumenty wywołania
+        argumenty = self.visit(ctx.listaWartosci())
+
+        parametry = funkcja["parametry"]
+
+
+        if len(parametry) != len(argumenty):
+            raise Exception(f"Niewłaściwa liczba argumentów dla funkcji {funkcja_nazwa}")
+
+        lokalne_zmienne = {}
+        for (typ, nazwa), wartosc in zip(parametry, argumenty):
+            lokalne_zmienne[nazwa] = wartosc
+
+        previous_variables = self.variables
+        self.variables = lokalne_zmienne
+
+        wynik = None
+        for instrukcja in funkcja["instrukcje"]:
+            if instrukcja.returnInstrukcja():
+                wynik = self.visit(instrukcja)
+                break
+            wynik = self.visit(instrukcja)
+
+        self.variables = previous_variables
+
+        if funkcja["return"]:
+            return wynik
+
+        return None
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#listaWartosci.
-    def visitListaWartosci(self, ctx:PLSRulesV2Parser.ListaWartosciContext):
-        return self.visitChildren(ctx)
+    def visitListaWartosci(self, ctx: PLSRulesV2Parser.ListaWartosciContext):
+        wartosci = []
+        for wartosc_ctx in ctx.wartosc():
+            wartosci.append(self.visit(wartosc_ctx))
+        return wartosci
 
 
     # Visit a parse tree produced by PLSRulesV2Parser#wartosc.
@@ -225,6 +290,11 @@ class PLSRulesV2Visitor(ParseTreeVisitor):
     def visitTypWartosci(self, ctx:PLSRulesV2Parser.TypWartosciContext):
         return self.visitChildren(ctx)
 
+    def visitReturnInstrukcja(self, ctx: PLSRulesV2Parser.ReturnInstrukcjaContext):
+        if ctx.wyrazeniePodstawowe() is not None:
+            return self.visit(ctx.wyrazeniePodstawowe())
+        else:
+            return None
 
     # Visit a parse tree produced by PLSRulesV2Parser#ifInstrukcja.
     def visitIfInstrukcja(self, ctx: PLSRulesV2Parser.IfInstrukcjaContext):
