@@ -1,7 +1,7 @@
 # PLScript
 To projekt zakładający stworzenie własnego języka programowania zawierającego polskie wyrazy kluczowe.
 
-## Spis tokenów
+# Spis tokenów
 
 ```antlr
 PLUS : '+';
@@ -50,6 +50,7 @@ PRZECINEK : ',';
 DO: 'DO';
 PRINT: 'WYPISZ';
 KONIEC: 'KONIEC';
+WYWOLANIE: 'WYWOLAJ';
 NUMERYCZNY : '-'?[0-9]+('.'[0-9]+)?;
 ID : [a-zA-Z_][a-zA-Z0-9_]*;
 ```
@@ -67,12 +68,14 @@ kod:
 
 wyrazenie:
     instrukcja |
-    deklaracjaFunkcji;
+    deklaracjaFunkcji |
+    wywolanieFunkcji;
 
 instrukcja:
     deklaracjaWartosci |
     przypisanieWartosci |
-    instrukcjaZlozona;
+    instrukcjaZlozona |
+    returnInstrukcja;
 
 instrukcjaZlozona:
     ifInstrukcja |
@@ -81,13 +84,13 @@ instrukcjaZlozona:
     printInstrukcja;
 
 deklaracjaFunkcji:
-    FUNKCJA ID LNAWIAS_OKRAGLY (parametry)? PNAWIAS_OKRAGLY LNAWIAS_KLAMROWY (instrukcja)* (RETURN wyrazenie?)? PNAWIAS_KLAMROWY;
+    FUNKCJA ID LNAWIAS_OKRAGLY (parametry)? PNAWIAS_OKRAGLY LNAWIAS_KLAMROWY (instrukcja)* (returnInstrukcja)? PNAWIAS_KLAMROWY;
 
 parametry:
     typWartosci ID (PRZECINEK typWartosci ID)*;
 
 deklaracjaWartosci:
-    typWartosci ID PODSTAW wyrazeniePodstawowe;
+    typWartosci ID PODSTAW wartosc;
 
 przypisanieWartosci:
     ID PODSTAW wartosc;
@@ -115,10 +118,10 @@ wyrazenieArytmetyczne:
     NUMERYCZNY | ID | wywolanieFunkcji;
 
 wywolanieFunkcji:
-    ID LNAWIAS_OKRAGLY listaWartosci PNAWIAS_OKRAGLY;
+    WYWOLANIE ID LNAWIAS_OKRAGLY listaWartosci? PNAWIAS_OKRAGLY;
 
 listaWartosci:
-    wartosc | listaWartosci PRZECINEK wartosc;
+    (wartosc PRZECINEK)*? wartosc;
 
 wartosc:
     wyrazenieString | wyrazenieBool | wyrazenieArytmetyczne | ID | wywolanieFunkcji;
@@ -126,18 +129,107 @@ wartosc:
 typWartosci:
     INT | STRING | BOOL;
 
+returnInstrukcja:
+    RETURN wyrazeniePodstawowe?;
+
 ifInstrukcja:
-    IF wyrazenieBool LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY (ELIF wyrazenieBool LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY)* (ELSE LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY)?;
+    IF wyrazenieBool LNAWIAS_KLAMROWY (instrukcja)* returnInstrukcja? PNAWIAS_KLAMROWY (elseInstrukcja)?;
+
+elseInstrukcja:
+    ELSE LNAWIAS_KLAMROWY instrukcja* returnInstrukcja? PNAWIAS_KLAMROWY;
 
 whileInstrukcja:
-    WHILE wyrazenieBool LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY;
+    WHILE wyrazenieBool LNAWIAS_KLAMROWY instrukcja* returnInstrukcja? PNAWIAS_KLAMROWY;
 
 forInstrukcja:
-    FOR LNAWIAS_OKRAGLY deklaracjaWartosci KONIEC_LINII wyrazenieBool KONIEC_LINII wyrazenieArytmetyczne PNAWIAS_OKRAGLY LNAWIAS_KLAMROWY instrukcja* PNAWIAS_KLAMROWY;
+    FOR LNAWIAS_OKRAGLY deklaracjaWartosci KONIEC_LINII wyrazenieBool KONIEC_LINII przypisanieWartosci PNAWIAS_OKRAGLY LNAWIAS_KLAMROWY instrukcja* returnInstrukcja? PNAWIAS_KLAMROWY;
 
 printInstrukcja:
     PRINT LNAWIAS_OKRAGLY wartosc PNAWIAS_OKRAGLY;
 ```
 
-## Narzędzia
+# Narzędzia
 Głównym narzędziem używanym w projekcie jest ANTLR, który został wykorzystany do wygenerowania analizatorów składniowych.
+
+#Instrukcja obsługi
+1. Pobierz zawartość repozytorium
+2. Pobierz zewnętrzne biblioteki potrzebne do działania aplikacji
+   ''' sh
+pip install pyqt5
+   '''
+3. Uruchom aplikację poprzez plik app.py
+''' sh
+python app.py
+   '''
+
+#Przykłady
+'''
+LICZBA A TO 4;
+
+JESLI A < 2 {
+    WYPISZ(2)
+} INACZEJ {
+	
+    WYPISZ(3)
+};
+
+WYPISZ("-----");
+
+POKI(A < 6) {
+    WYPISZ(A)
+    A TO A+1
+};
+
+WYPISZ("-----");
+
+PETLA(LICZBA B TO 4; B < 6; B TO B+1){
+    WYPISZ(B)
+};
+
+
+
+
+FUNKCJA FOO(LICZBA X){
+    PETLA(LICZBA Y TO 0; Y < X; Y TO Y+1) {
+        WYPISZ(Y)
+    }
+    Y TO Y+1
+    ZWROC Y
+};
+
+LICZBA B TO WYWOLAJ FOO(5);
+
+WYPISZ("-----");
+WYPISZ(B);
+WYPISZ("-----");
+
+WYPISZ(WYWOLAJ FOO(10));
+'''
+Po wykonaniu:
+'''
+3.0
+-----
+4.0
+5.0
+-----
+4.0
+5.0
+0.0
+1.0
+2.0
+3.0
+4.0
+-----
+6.0
+-----
+0.0
+1.0
+2.0
+3.0
+4.0
+5.0
+6.0
+7.0
+8.0
+9.0
+'''
