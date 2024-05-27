@@ -163,7 +163,7 @@ pip install pyqt5
 python app.py
 ```
 
-#Przykłady
+# Przykłady
 ```
 LICZBA A TO 4;
 
