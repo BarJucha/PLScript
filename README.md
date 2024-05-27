@@ -154,12 +154,11 @@ Głównym narzędziem używanym w projekcie jest ANTLR, który został wykorzyst
 # Instrukcja obsługi
 1. Pobierz zawartość repozytorium
 2. Pobierz zewnętrzne biblioteki potrzebne do działania aplikacji
-3. 
 ``` sh
 pip install pyqt5
 ```
 
-4. Uruchom aplikację poprzez plik app.py
+3. Uruchom aplikację poprzez plik app.py
 ``` sh
 python app.py
 ```
