@@ -160,9 +160,9 @@ pip install pyqt5
 ```
 
 4. Uruchom aplikację poprzez plik app.py
-''' sh
+``` sh
 python app.py
-   '''
+```
 
 #Przykłady
 ```
