@@ -1,6 +1,9 @@
 # PLScript
 To projekt zakładający stworzenie własnego języka programowania zawierającego polskie wyrazy kluczowe.
 
+# Opis projektu
+Projekt zakłada stworzenie interpretera, który jest implementowany w języku Python. To stworzenia skanera i parsera został użyty generator ANTLR4.
+
 # Spis tokenów
 
 ```antlr
