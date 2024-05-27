@@ -1,5 +1,6 @@
 import tkinter as tk
 import subprocess
+from tkinter import messagebox
 
 def execute_code():
     user_input = input_text.get("1.0", tk.END)
@@ -16,12 +17,36 @@ def execute_code():
     terminal_output.insert(tk.END, f"${result.stdout}{result.stderr}")
     terminal_output.config(state=tk.DISABLED)
 
+def save_code():
+    user_input = input_text.get("1.0", tk.END)
+    filename = entry_field.get().strip()
+
+    if filename:
+        with open(f"{filename}.txt", 'w') as f:
+            f.write(user_input)
+
+
+def open_code():
+    filename = entry_field.get().strip()  # Pobierz nazwę pliku z entry_field i usuń białe znaki
+
+    if filename:
+        try:
+            with open(f"{filename}.txt", 'r') as f:
+                file_content = f.read()
+            input_text.config(state=tk.NORMAL)
+            input_text.delete("1.0", tk.END)
+            input_text.insert(tk.END, file_content)
+        except FileNotFoundError:
+            messagebox.showerror("Błąd", f"Plik {filename} nie istnieje")
+
 def on_tab_pressed(event):
     input_text.insert(tk.INSERT, "    ")
     return 'break'
 
 root = tk.Tk()
 root.title("PLScript")
+
+root.state('zoomed')
 
 top_frame = tk.Frame(root)
 top_frame.pack(fill=tk.BOTH, expand=True)
@@ -41,9 +66,21 @@ input_text.config(yscrollcommand=input_scroll.set)
 
 input_text.bind("<Tab>", on_tab_pressed)
 
-# Utwórz przycisk do wykonania kodu
-execute_button = tk.Button(top_frame, text="Wykonaj kod", command=execute_code)
-execute_button.grid(row=1, column=0, sticky="s")
+button_frame = tk.Frame(top_frame)
+button_frame.grid(row=1, column=0, columnspan=2, pady=5)
+
+# Utwórz przyciski
+execute_button = tk.Button(button_frame, text="Wykonaj kod", command=execute_code)
+execute_button.pack(side=tk.LEFT, padx=5)
+
+save_button = tk.Button(button_frame, text="Zapisz", command=save_code)
+save_button.pack(side=tk.LEFT, padx=5)
+
+open_button = tk.Button(button_frame, text="Wczytaj", command=open_code)
+open_button.pack(side=tk.LEFT, padx=5)
+
+entry_field = tk.Entry(button_frame)
+entry_field.pack(side=tk.LEFT, padx=5)
 
 # Utwórz ramkę dla dolnego obszaru aplikacji (gdzie jest terminal)
 bottom_frame = tk.Frame(root)
